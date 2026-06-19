@@ -13,7 +13,7 @@ def _normalize_file(path: str) -> str:
     """Читает файл, определяет язык и нормализует."""
     with open(path, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
-    lang, _ = detect_language(content)
+    lang, _ = "python", ""
     return normalize_code(content, lang)
 
 
