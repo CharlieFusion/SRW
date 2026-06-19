@@ -158,7 +158,9 @@ def main():
     print(header)
     print("-" * len(header))
 
-    for name, data in all_results:
+    print(all_results)
+
+    for name, data in all_results.items():
         m = data["best_metrics"]
         if m is None:
             print(f"{name:<15} | {'N/A':<10} | {'N/A':<10} | {'N/A':<10} | {'N/A':<10} | {'N/A':<10} | {'N/A':<10}")
