@@ -158,8 +158,6 @@ def main():
     print(header)
     print("-" * len(header))
 
-    print(all_results)
-
     for name, data in all_results.items():
         m = data["best_metrics"]
         if m is None:

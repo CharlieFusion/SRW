@@ -1,23 +1,34 @@
-# external_hashes.py
-"""
-Адаптеры для внешних алгоритмов с диагностикой.
-"""
+# external_hashes.py (обновлённый)
 
 import ssdeep
 import tlsh
 from pathlib import Path
 from typing import Dict, Any
 
+from language import detect_language
+from normalize import normalize_code
+
+
+def _normalize_file(path: str) -> str:
+    """Читает файл, определяет язык и нормализует."""
+    with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+        content = f.read()
+    lang, _ = detect_language(content)
+    return normalize_code(content, lang)
+
 
 class SSDeepAdapter:
     @staticmethod
     def build_signature(path: str) -> Dict[str, Any]:
         try:
-            hash_str = ssdeep.hash_from_file(path)
+            normalized = _normalize_file(path)
+            if not normalized:
+                return {}
+            hash_str = ssdeep.hash(normalized)
             if hash_str:
                 return {"path": path, "hash": hash_str, "type": "ssdeep"}
         except Exception as e:
-            print(f"[SSDeep] Ошибка для {Path(path).name}: {e}")
+            print(f"[SSDeep] Ошибка для {path}: {e}")
         return {}
 
     @staticmethod
@@ -26,49 +37,29 @@ class SSDeepAdapter:
             return 0.0
         try:
             score = ssdeep.compare(sig1.get("hash", ""), sig2.get("hash", ""))
-            return score / 100.0
+            # Нелинейное масштабирование для повышения чувствительности
+            return (score / 100.0) ** 0.6
         except Exception:
             return 0.0
 
 
 class TLSHAdapter:
-    """Адаптер для TLSH с поддержкой разных версий библиотеки."""
-
     @staticmethod
     def build_signature(path: str) -> Dict[str, Any]:
-        with open(path, "rb") as f:
-            data = f.read()
-
-        # Попытка 1: новый стиль (4.x) — Tlsh(data) с методами is_valid / hexdigest
         try:
-            t = tlsh.Tlsh(data)
-            if hasattr(t, 'is_valid') and t.is_valid():
-                if hasattr(t, 'hexdigest'):
-                    return {"path": path, "hash": t.hexdigest(), "type": "tlsh"}
-        except TypeError:
-            # Если TypeError — значит конструктор не принимает аргументы (старая версия)
-            pass
-
-        # Попытка 2: старый стиль (1.x – 3.x) — Tlsh() + update + final + get_hash
-        try:
+            normalized = _normalize_file(path)
+            if not normalized:
+                return {}
+            # TLSH работает с байтами
             t = tlsh.Tlsh()
-            t.update(data)
+            t.update(normalized.encode('utf-8'))
             t.final()
             if hasattr(t, 'get_hash'):
                 h = t.get_hash()
-                if h is not None:
+                if h:
                     return {"path": path, "hash": h, "type": "tlsh"}
-        except Exception:
-            pass
-
-        # Попытка 3: если есть функция tlsh.hash (некоторые версии)
-        try:
-            h = tlsh.hash(data)
-            if h:
-                return {"path": path, "hash": h, "type": "tlsh"}
-        except Exception:
-            pass
-
+        except Exception as e:
+            print(f"[TLSH] Ошибка для {path}: {e}")
         return {}
 
     @staticmethod
@@ -76,9 +67,9 @@ class TLSHAdapter:
         if not sig1 or not sig2:
             return 0.0
         try:
-            # В старых версиях diff может принимать строки, в новых — тоже
             dist = tlsh.diff(sig1.get("hash", ""), sig2.get("hash", ""))
-            max_dist = 500
+            # Для нормализованного кода расстояние меньше
+            max_dist = 150
             return max(0.0, 1.0 - (dist / max_dist))
         except Exception:
             return 0.0
