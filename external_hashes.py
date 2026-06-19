@@ -36,42 +36,38 @@ class TLSHAdapter:
 
     @staticmethod
     def build_signature(path: str) -> Dict[str, Any]:
+        with open(path, "rb") as f:
+            data = f.read()
+
+        # Попытка 1: новый стиль (4.x) — Tlsh(data) с методами is_valid / hexdigest
         try:
-            with open(path, "rb") as f:
-                data = f.read()
+            t = tlsh.Tlsh(data)
+            if hasattr(t, 'is_valid') and t.is_valid():
+                if hasattr(t, 'hexdigest'):
+                    return {"path": path, "hash": t.hexdigest(), "type": "tlsh"}
+        except TypeError:
+            # Если TypeError — значит конструктор не принимает аргументы (старая версия)
+            pass
 
-            # Попытка 1: новый стиль (4.x) — Tlsh(data) с методами is_valid / hexdigest
-            try:
-                t = tlsh.Tlsh(data)
-                if hasattr(t, 'is_valid') and t.is_valid():
-                    if hasattr(t, 'hexdigest'):
-                        return {"path": path, "hash": t.hexdigest(), "type": "tlsh"}
-            except TypeError:
-                # Если TypeError — значит конструктор не принимает аргументы (старая версия)
-                pass
-
-            # Попытка 2: старый стиль (1.x – 3.x) — Tlsh() + update + final + get_hash
-            try:
-                t = tlsh.Tlsh()
-                t.update(data)
-                t.final()
-                if hasattr(t, 'get_hash'):
-                    h = t.get_hash()
-                    if h is not None:
-                        return {"path": path, "hash": h, "type": "tlsh"}
-            except Exception:
-                pass
-
-            # Попытка 3: если есть функция tlsh.hash (некоторые версии)
-            try:
-                h = tlsh.hash(data)
-                if h:
+        # Попытка 2: старый стиль (1.x – 3.x) — Tlsh() + update + final + get_hash
+        try:
+            t = tlsh.Tlsh()
+            t.update(data)
+            t.final()
+            if hasattr(t, 'get_hash'):
+                h = t.get_hash()
+                if h is not None:
                     return {"path": path, "hash": h, "type": "tlsh"}
-            except Exception:
-                pass
+        except Exception:
+            pass
 
-        except Exception as e:
-            print(f"[TLSH] Ошибка для {path}: {e}")
+        # Попытка 3: если есть функция tlsh.hash (некоторые версии)
+        try:
+            h = tlsh.hash(data)
+            if h:
+                return {"path": path, "hash": h, "type": "tlsh"}
+        except Exception:
+            pass
 
         return {}
 
