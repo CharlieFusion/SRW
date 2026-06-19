@@ -48,9 +48,10 @@ class TLSHAdapter:
     def build_signature(path: str) -> Dict[str, Any]:
         try:
             normalized = _normalize_file(path)
-            if not normalized:
+            if not normalized or len(normalized) < 256:
+                # TLSH требует минимум 256 байт
                 return {}
-            # TLSH работает с байтами
+            # Для старых версий TLSH
             t = tlsh.Tlsh()
             t.update(normalized.encode('utf-8'))
             t.final()
@@ -58,8 +59,15 @@ class TLSHAdapter:
                 h = t.get_hash()
                 if h:
                     return {"path": path, "hash": h, "type": "tlsh"}
+            # Для новых версий (если get_hash нет, пробуем hexdigest)
+            if hasattr(t, 'hexdigest'):
+                h = t.hexdigest()
+                if h:
+                    return {"path": path, "hash": h, "type": "tlsh"}
         except Exception as e:
-            print(f"[TLSH] Ошибка для {path}: {e}")
+            # Если ошибка "less than 256", мы её уже отсекли, но на всякий случай
+            if "less than 256" not in str(e):
+                print(f"[TLSH] Ошибка для {path}: {e}")
         return {}
 
     @staticmethod
