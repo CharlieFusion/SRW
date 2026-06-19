@@ -34,7 +34,7 @@ def main():
     print("=" * 70)
 
     # Параметры
-    source_dir = "./scripts/white"   # УБЕДИТЕСЬ, ЧТО ЭТА ДИРЕКТОРИЯ СУЩЕСТВУЕТ!
+    source_dir = "./scripts/white/py"   # УБЕДИТЕСЬ, ЧТО ЭТА ДИРЕКТОРИЯ СУЩЕСТВУЕТ!
     if not Path(source_dir).exists():
         print(f"ОШИБКА: Директория {source_dir} не найдена.")
         print("Создайте её или укажите правильный путь.")

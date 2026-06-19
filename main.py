@@ -24,12 +24,12 @@ def main():
 
     print("\n=== РЕЗУЛЬТАТЫ ===")
     print(f"Всего пар:\t{report['total_pairs']}")
-    print(f"Precision:\t{metrics['precision']:.3f}")
-    print(f"Recall:\t\t{metrics['recall']:.3f}")
-    print(f"F1-score:\t{metrics['f1']:.3f}")
-    print(f"Accuracy:\t{metrics['accuracy']:.3f}")
-    print(f"FPR:\t\t{metrics['false_positive_rate']:.3f}")
-    print(f"FNR:\t\t{metrics['false_negative_rate']:.3f}")
+    print(f"Precision:\t{metrics['precision']}")
+    print(f"Recall:\t\t{metrics['recall']}")
+    print(f"F1-score:\t{metrics['f1']}")
+    print(f"Accuracy:\t{metrics['accuracy']}")
+    print(f"FPR:\t\t{metrics['false_positive_rate']}")
+    print(f"FNR:\t\t{metrics['false_negative_rate']}")
 
     # plot_similarity_histogram(report["results"])
 
