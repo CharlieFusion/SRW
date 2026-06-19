@@ -37,19 +37,16 @@ class TLSHAdapter:
         try:
             with open(path, "rb") as f:
                 data = f.read()
-            # Минимальная длина данных — 50 байт (для коротких файлов)
-            t = tlsh.Tlsh(data, minimum_data_length=50)
+            # Правильный вызов (без ключевых слов)
+            t = tlsh.Tlsh(data)
             if t.is_valid():
                 return {
                     "path": path,
                     "hash": t.hexdigest(),
                     "type": "tlsh"
                 }
-            else:
-                # Логируем, но не выводим слишком много
-                pass
         except Exception as e:
-            print(f"[TLSH] Ошибка для {Path(path).name}: {e}")
+            print(f"[TLSH] Ошибка для {path}: {e}")
         return {}
 
     @staticmethod
