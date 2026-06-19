@@ -1,0 +1,10 @@
+myplot.png
+/.venv/
+/generated/
+/normalized/
+/results/
+/scripts/
+/scripts_dataset/
+/test_data/
+/tests/
+/v2/
