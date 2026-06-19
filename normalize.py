@@ -3,10 +3,9 @@ import re
 
 def normalize_code(content: str, lang: str) -> str:
     content = _strip_bom(content)
-    content = _normalize_newlines(content)
     content = _remove_comments(content, lang)
     content = _normalize_whitespace(content)
-    content = _normalize_empty_lines(content)
+    content = _normalize_newlines(content)
     return content.strip()
 
 
@@ -15,22 +14,14 @@ def _strip_bom(text: str) -> str:
 
 
 def _normalize_newlines(text: str) -> str:
-    return text.replace("\r\n", "\n").replace("\r", "\n")
+    return text.replace("\n", "").replace("\r", "")
 
 
 def _normalize_whitespace(text: str) -> str:
     lines = []
     for line in text.split("\n"):
-        stripped = line.rstrip()
-        # схлопываем множественные пробелы (но не отступы)
-        indent = len(stripped) - len(stripped.lstrip(" "))
-        body = re.sub(r" {2,}", " ", stripped.lstrip(" "))
-        lines.append(" " * indent + body)
+        lines.append(line.strip())
     return "\n".join(lines)
-
-
-def _normalize_empty_lines(text: str) -> str:
-    return re.sub(r"\n{3,}", "\n\n", text)
 
 
 def _remove_comments(text: str, lang: str) -> str:
