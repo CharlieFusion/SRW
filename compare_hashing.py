@@ -25,7 +25,7 @@ except ImportError:
 # Импорт ваших модулей
 from dataset import generate_pairs
 from evaluate import evaluate_pairs
-from external_hashes import SSDeepAdapter, TLSHAdapter, OurMethodAdapter
+from external_hashes import SSDeepAdapter, TLSHAdapter, CustomAdapter
 
 
 def main():
@@ -64,8 +64,8 @@ def main():
     # Ваш метод (всегда доступен)
     algorithms.append({
         "name": "Our Method",
-        "build": OurMethodAdapter.build_signature,
-        "compare": OurMethodAdapter.compare,
+        "build": CustomAdapter.build_signature,
+        "compare": CustomAdapter.compare,
     })
 
     # ssdeep
